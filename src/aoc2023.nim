@@ -2,7 +2,6 @@
 
 import fusion/matching
 import std/[options, os, strformat, strutils]
-import system
 
 import day01
 import day02

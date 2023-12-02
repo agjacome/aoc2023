@@ -30,5 +30,16 @@ func partOne*(input: string): string =
 
     $sum
 
-proc partTwo*(input: string): string =
-    "TODO"
+func partTwo*(input: string): string =
+    func getMinPossibleSet(game: seq[CubeSet]): CubeSet =
+        for cube in game:
+            result.red = max(result.red, cube.red)
+            result.green = max(result.green, cube.green)
+            result.blue = max(result.blue, cube.blue)
+
+    let power = parseGamesRecord(input)
+        .mapIt(getMinPossibleSet(it.games))
+        .mapIt(it.red * it.green * it.blue)
+        .sum
+
+    $power
