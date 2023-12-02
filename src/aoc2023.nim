@@ -1,21 +1,25 @@
-import std/[os, strformat, strutils]
+import std/[options, os, strformat, strutils]
 import system
 
 import day01
 
-proc solveDay(day: int, input: string) =
-    let (part1, part2) = case day:
+func solveDay(day: int, input: string): Option[(string, string)] =
+    case day:
         of 1:
-            (day01.partOne(input), day01.partTwo(input))
+            some((day01.partOne(input), day01.partTwo(input)))
         else:
-            echo fmt"Day {day} not found"
-            quit(QuitFailure)
-
-    echo fmt"Part 1: {part1}"
-    echo fmt"Part 2: {part2}"
+            none((string, string))
 
 when isMainModule:
-    solveDay(
+    let solution = solveDay(
         day = parseInt(paramStr(1)),
         input = readFile(paramStr(2))
     )
+
+    if solution.isNone:
+        echo "No solution found for Day {paramStr(1)}".fmt
+        quit(QuitFailure)
+
+    let (part1, part2) = solution.get
+    echo "Part 1: {part1}".fmt
+    echo "Part 2: {part2}".fmt
