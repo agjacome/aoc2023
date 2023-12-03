@@ -1,22 +1,27 @@
 {.experimental: "caseStmtMacros".}
 
 import fusion/matching
-import std/[options, os, strformat, strutils]
+import std/[options, os, strformat, strutils, sugar, tables]
 
-import day01
-import day02
+import day
 
-func solveDay(day: int, input: string): Option[(string, string)] =
-    case day:
-        of 1: (day01.partOne(input), day01.partTwo(input)).some
-        of 2: (day02.partOne(input), day02.partTwo(input)).some
-        else: (string, string).none
+type Solution = tuple[partOne: string, partTwo: string]
 
-when isMainModule:
-    case solveDay(day = parseInt(paramStr(1)), input = readFile(paramStr(2))):
-        of Some((@part1, @part2)):
+proc solveDay(n: int, input: string): Option[Solution] =
+    if n notin days:
+        return Solution.none
+
+    let day = days[n]
+    (partOne: day.partOne(input), partTwo: day.partTwo(input)).some
+
+proc main(day: string, file: string) =
+    case solveDay(n = parseInt(day), input = readFile(file)):
+        of Some(Solution(partOne: @part1, partTwo: @part2)):
             echo "Part 1: {part1}".fmt
             echo "Part 2: {part2}".fmt
         of None():
             echo "No solution found for Day {paramStr(1)}".fmt
             quit(QuitFailure)
+
+when isMainModule:
+    main(paramStr(1), paramStr(2))

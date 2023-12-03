@@ -41,4 +41,3 @@ func partTwo*(input: string): string =
         acc + (matches[0] & matches[^1]).parseUInt
 
     foldLines(input, `iter`)
-
