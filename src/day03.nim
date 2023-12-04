@@ -1,4 +1,4 @@
-import std/[sequtils, sets, strutils, sugar]
+import std/[sequtils, sets, strutils]
 
 type
     Engine = seq[seq[char]]
@@ -16,37 +16,48 @@ func getAdjacentPositions(row, col: int): seq[Position] =
         (row: row + 1, col: col + 1),
     ]
 
-func getAdjacentCells(engine: Engine, row, col: int): seq[char] =
-    getAdjacentPositions(row, col)
-        .filterIt(it.row >= 0 and it.row < engine.len and it.col >= 0 and it.col < engine[row].len)
-        .mapIt(engine[it.row][it.col])
-
-func isPartNumber(engine: Engine, row, startCol, endCol: int): bool =
-    func isSymbol(char: char): bool =
-        char != '.' and not char.isDigit
-
-    (startCol .. endCol).anyIt(engine.getAdjacentCells(row, it).any(`isSymbol`))
-
 func parseEngine(input: string): Engine =
     input.strip.splitLines.mapIt(it.items.toSeq)
 
 func partOne*(input: string): string =
-    func sumPartNumbers(engine: Engine): uint =
-        result = 0'u
-        for row in 0 ..< engine.len:
-            var number = ""
+    let engine = input.parseEngine
 
-            for col in 0 .. engine[row].len:
-                if col < engine[row].len and engine[row][col].isDigit:
-                    number &= engine[row][col]
-                    continue
+    func getFirstDigitPosition(p: Position): Position =
+        var col = p.col
+        while col > 0 and engine[p.row][col - 1].isDigit:
+            col -= 1
 
-                if number.len > 0 and engine.isPartNumber(row, col - number.len, col - 1):
-                    result += number.parseUInt
+        (row: p.row, col: col)
 
-                number = ""
+    var parts = initHashSet[Position]()
 
-    $input.parseEngine.sumPartNumbers
+    for row in 0 ..< engine.len:
+        for col in 0 ..< engine[row].len:
+            if engine[row][col] == '.' or engine[row][col].isDigit:
+                continue
+
+            let partNumbers = getAdjacentPositions(row, col)
+                .filterIt(it.row >= 0 and it.row < engine.len)
+                .filterIt(it.col >= 0 and it.col < engine[row].len)
+                .filterIt(engine[it.row][it.col].isDigit)
+                .map(`getFirstDigitPosition`)
+                .toHashSet
+
+            parts = parts + partNumbers
+
+    var sum = 0'u
+    for part in parts:
+        var number = ""
+
+        for col in part.col ..< engine[part.row].len:
+            if not engine[part.row][col].isDigit:
+                break
+
+            number &= engine[part.row][col]
+
+        sum += number.parseUInt
+
+    $sum
 
 # TODO: ugly, refactor to use same approach in p1 and extract common code
 func partTwo*(input: string): string =
