@@ -1,110 +1,81 @@
-import std/[sequtils, sets, strutils]
+import std/[math, sequtils, sets, strutils, sugar]
 
 type
     Engine = seq[seq[char]]
     Position = tuple[row: int, col: int]
 
-func getAdjacentPositions(row, col: int): seq[Position] =
+func getAdjacents(pos: Position): seq[Position] =
     @[
-        (row: row - 1, col: col - 1),
-        (row: row - 1, col: col),
-        (row: row - 1, col: col + 1),
-        (row: row, col: col - 1),
-        (row: row, col: col + 1),
-        (row: row + 1, col: col - 1),
-        (row: row + 1, col: col),
-        (row: row + 1, col: col + 1),
+        (row: pos.row - 1, col: pos.col - 1),
+        (row: pos.row - 1, col: pos.col),
+        (row: pos.row - 1, col: pos.col + 1),
+        (row: pos.row, col: pos.col - 1),
+        (row: pos.row, col: pos.col + 1),
+        (row: pos.row + 1, col: pos.col - 1),
+        (row: pos.row + 1, col: pos.col),
+        (row: pos.row + 1, col: pos.col + 1),
     ]
+
+func getFirstDigit(engine: Engine, pos: Position): Position =
+    var col = pos.col
+    while col > 0 and engine[pos.row][col - 1].isDigit:
+        col -= 1
+
+    (row: pos.row, col: col)
+
+func getAdjacentNumbersPositions(engine: Engine, pos: Position): HashSet[Position] =
+    pos.getAdjacents
+        .filterIt(it.row >= 0 and it.row < engine.len)
+        .filterIt(it.col >= 0 and it.col < engine[pos.row].len)
+        .filterIt(engine[it.row][it.col].isDigit)
+        .mapIt(engine.getFirstDigit(it))
+        .toHashSet
+
+func parseNumberAt(engine: Engine, pos: Position): uint =
+    var number = ""
+
+    for col in pos.col ..< engine[pos.row].len:
+        if not engine[pos.row][col].isDigit:
+            break
+
+        number &= engine[pos.row][col]
+
+    number.parseUInt
+
+iterator partNumbersMatching(engine: Engine, predicate: char -> bool): HashSet[Position] =
+    for row in 0 ..< engine.len:
+        for col in 0 ..< engine[row].len:
+            if not engine[row][col].predicate:
+                continue
+
+            let position = (row: row, col: col)
+            yield engine.getAdjacentNumbersPositions(position)
 
 func parseEngine(input: string): Engine =
     input.strip.splitLines.mapIt(it.items.toSeq)
 
-func partOne*(input: string): string =
+proc partOne*(input: string): string =
+    func isSymbol(c: char): bool = c != '.' and not c.isDigit
+
     let engine = input.parseEngine
-
-    func getFirstDigitPosition(p: Position): Position =
-        var col = p.col
-        while col > 0 and engine[p.row][col - 1].isDigit:
-            col -= 1
-
-        (row: p.row, col: col)
-
     var parts = initHashSet[Position]()
 
-    for row in 0 ..< engine.len:
-        for col in 0 ..< engine[row].len:
-            if engine[row][col] == '.' or engine[row][col].isDigit:
-                continue
+    for partNumbers in engine.partNumbersMatching(`isSymbol`):
+        parts = parts + partNumbers
 
-            let partNumbers = getAdjacentPositions(row, col)
-                .filterIt(it.row >= 0 and it.row < engine.len)
-                .filterIt(it.col >= 0 and it.col < engine[row].len)
-                .filterIt(engine[it.row][it.col].isDigit)
-                .map(`getFirstDigitPosition`)
-                .toHashSet
+    $parts.toSeq.mapIt(engine.parseNumberAt(it)).sum
 
-            parts = parts + partNumbers
+proc partTwo*(input: string): string =
+    func isGear(c: char): bool = c == '*'
 
-    var sum = 0'u
-    for part in parts:
-        var number = ""
-
-        for col in part.col ..< engine[part.row].len:
-            if not engine[part.row][col].isDigit:
-                break
-
-            number &= engine[part.row][col]
-
-        sum += number.parseUInt
-
-    $sum
-
-# TODO: ugly, refactor to use same approach in p1 and extract common code
-func partTwo*(input: string): string =
     let engine = input.parseEngine
-
-    func getFirstDigitPosition(p: Position): Position =
-        var col = p.col
-        while col > 0 and engine[p.row][col - 1].isDigit:
-            col -= 1
-
-        (row: p.row, col: col)
-
     var gears = initHashSet[(Position, Position)]()
 
-    for row in 0 ..< engine.len:
-        for col in 0 ..< engine[row].len:
-            if engine[row][col] != '*':
-                continue
+    for partNumbers in engine.partNumbersMatching(`isGear`):
+        var partNumbers = partNumbers
+        if (partNumbers.len == 2):
+            let fst = partNumbers.pop
+            let snd = partNumbers.pop
+            gears.incl((fst, snd))
 
-            let partNumbers = getAdjacentPositions(row, col)
-                .filterIt(it.row >= 0 and it.row < engine.len)
-                .filterIt(it.col >= 0 and it.col < engine[row].len)
-                .filterIt(engine[it.row][it.col].isDigit)
-                .map(`getFirstDigitPosition`)
-                .deduplicate
-
-            if (partNumbers.len == 2):
-                gears.incl((partNumbers[0], partNumbers[1]))
-
-    var sum = 0'u
-    for (part1, part2) in gears:
-        var number1 = ""
-        var number2 = ""
-
-        for col in part1.col ..< engine[part1.row].len:
-            if not engine[part1.row][col].isDigit:
-                break
-
-            number1 &= engine[part1.row][col]
-
-        for col in part2.col ..< engine[part2.row].len:
-            if not engine[part2.row][col].isDigit:
-                break
-
-            number2 &= engine[part2.row][col]
-
-        sum += number1.parseUInt * number2.parseUInt
-
-    $sum
-
+    $gears.toSeq.mapIt(engine.parseNumberAt(it[0]) * engine.parseNumberAt(it[1])).sum
