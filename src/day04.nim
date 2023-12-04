@@ -1,4 +1,4 @@
-import std/[math, nre, sequtils, strutils]
+import std/[math, nre, sequtils, strutils, tables]
 
 type
     Card = object
@@ -30,5 +30,17 @@ func partOne*(input: string): string =
 
     $sum
 
-proc partTwo*(input: string): string =
-    "TODO"
+func partTwo*(input: string): string =
+    let cards = parseCards(input)
+
+    var cardCount = toCountTable(cards.mapIt(it.id))
+
+    for card in cards:
+        let times = cardCount[card.id]
+        let matches = card.owned.filterIt(it in card.winning)
+
+        for match in 1 .. matches.len.uint:
+            cardCount.inc(card.id + match, times)
+
+    $cardCount.values.toSeq.sum
+
