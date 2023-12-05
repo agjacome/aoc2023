@@ -13,4 +13,5 @@ autocmd('BufWritePost', {
     command = [[silent !nimpretty --indent:4 --maxLineLen:100 %]]
 })
 
-vim.keymap.set('n', '<leader>t', '<cmd>!nimble test<cr>', { noremap = true })
+vim.keymap.set('n', '<leader>t', '<cmd>!nim c -r %:.<cr>', { noremap = true })
+vim.keymap.set('n', '<leader>T', '<cmd>!nimble test<cr>',  { noremap = true })
