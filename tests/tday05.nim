@@ -37,3 +37,4 @@ testDay(5):
         56 93 4
     """):
         expectPartOne("35")
+        expectPartTwo("46")
