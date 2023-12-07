@@ -25,8 +25,10 @@ func multiRecord(input: string): seq[uint] =
 func singleRecord(input: string): seq[uint] =
     @[input.replace(" ", "").parseUInt]
 
-func partOne*(input: string): string =
+func partOne(input: string): string =
     $input.parseRaceRecords(`multiRecord`).multiplyWaysToWin
 
-func partTwo*(input: string): string =
+func partTwo(input: string): string =
     $input.parseRaceRecords(`singleRecord`).multiplyWaysToWin
+
+const day* = (partOne: partOne, partTwo: partTwo)

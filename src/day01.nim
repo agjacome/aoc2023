@@ -15,7 +15,7 @@ const spelledNumbers = {
 func foldLines(input: string, iter: ((uint, string) {.noSideEffect.} -> uint)): string =
     $input.strip.splitLines.foldl(iter(a, b), 0'u)
 
-func partOne*(input: string): string =
+func partOne(input: string): string =
     func iter(acc: uint, line: string): uint =
         let matches = line.findAll("""\d""".re)
         let number = (matches[0] & matches[^1]).parseUInt
@@ -24,7 +24,7 @@ func partOne*(input: string): string =
     foldLines(input, `iter`)
 
 
-func partTwo*(input: string): string =
+func partTwo(input: string): string =
     # ugly as hell but whatever
     func getMatchesFrom(i: int, line: string): seq[string] =
         if line[i].isDigit:
@@ -41,3 +41,5 @@ func partTwo*(input: string): string =
         acc + (matches[0] & matches[^1]).parseUInt
 
     foldLines(input, `iter`)
+
+const day* = (partOne: partOne, partTwo: partTwo)

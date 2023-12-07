@@ -19,7 +19,7 @@ func parseCards(input: string): seq[Card] =
 
         result &= card
 
-func partOne*(input: string): string =
+func partOne(input: string): string =
     var sum = 0
 
     for card in parseCards(input):
@@ -30,7 +30,7 @@ func partOne*(input: string): string =
 
     $sum
 
-func partTwo*(input: string): string =
+func partTwo(input: string): string =
     let cards = parseCards(input)
 
     var cardCount = toCountTable(cards.mapIt(it.id))
@@ -44,3 +44,4 @@ func partTwo*(input: string): string =
 
     $cardCount.values.toSeq.sum
 
+const day* = (partOne: partOne, partTwo: partTwo)

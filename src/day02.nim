@@ -17,7 +17,7 @@ func parseGamesRecord(input: string): seq[GameRecord] =
         let games = match.captures[1].split("; ").map(`parseCubeSet`)
         result &= (id: id, games: games)
 
-func partOne*(input: string): string =
+func partOne(input: string): string =
     const limits: CubeSet = (red: 12, green: 13, blue: 14)
 
     func isGamePossible(game: seq[CubeSet]): bool =
@@ -30,7 +30,7 @@ func partOne*(input: string): string =
 
     $sum
 
-func partTwo*(input: string): string =
+func partTwo(input: string): string =
     func getMinPossibleSet(game: seq[CubeSet]): CubeSet =
         for cube in game:
             result.red = max(result.red, cube.red)
@@ -43,3 +43,5 @@ func partTwo*(input: string): string =
         .sum
 
     $power
+
+const day* = (partOne: partOne, partTwo: partTwo)

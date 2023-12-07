@@ -70,7 +70,7 @@ func mapSeedRanges(seedRanges: seq[Range], maps: seq[Mapping]): seq[Range] =
             last: overlap.last + map.destination - map.source
         )
 
-func partOne*(input: string): string =
+func partOne(input: string): string =
     let almanac = input.parseAlmanac
 
     let locations = almanac.maps.foldl(
@@ -80,7 +80,7 @@ func partOne*(input: string): string =
 
     $locations.min
 
-func partTwo*(input: string): string =
+func partTwo(input: string): string =
     let almanac = input.parseAlmanac
 
     var seedRanges: seq[Range] = @[]
@@ -96,3 +96,5 @@ func partTwo*(input: string): string =
     )
 
     $locations.min.first
+
+const day* = (partOne: partOne, partTwo: partTwo)

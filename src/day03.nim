@@ -57,7 +57,7 @@ iterator partNumbersMatching(
 func parseEngine(input: string): Engine =
     input.strip.splitLines.mapIt(it.items.toSeq)
 
-func partOne*(input: string): string =
+func partOne(input: string): string =
     func isSymbol(c: char): bool = not (c == '.' or c.isDigit)
 
     let engine = input.parseEngine
@@ -68,7 +68,7 @@ func partOne*(input: string): string =
 
     $parts.toSeq.mapIt(engine.parseNumberAt(it)).sum
 
-func partTwo*(input: string): string =
+func partTwo(input: string): string =
     func isGear(c: char): bool = c == '*'
 
     let engine = input.parseEngine
@@ -82,3 +82,5 @@ func partTwo*(input: string): string =
             gears.incl((fst, snd))
 
     $gears.toSeq.mapIt(engine.parseNumberAt(it[0]) * engine.parseNumberAt(it[1])).sum
+
+const day* = (partOne: partOne, partTwo: partTwo)
