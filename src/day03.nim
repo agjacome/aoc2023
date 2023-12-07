@@ -42,7 +42,10 @@ func parseNumberAt(engine: Engine, pos: Position): uint =
 
     number.parseUInt
 
-iterator partNumbersMatching(engine: Engine, predicate: char -> bool): HashSet[Position] =
+iterator partNumbersMatching(
+    engine: Engine,
+    predicate: (char {.noSideEffect.} -> bool)
+): HashSet[Position] =
     for row in 0 ..< engine.len:
         for col in 0 ..< engine[row].len:
             if not engine[row][col].predicate:
@@ -54,8 +57,8 @@ iterator partNumbersMatching(engine: Engine, predicate: char -> bool): HashSet[P
 func parseEngine(input: string): Engine =
     input.strip.splitLines.mapIt(it.items.toSeq)
 
-proc partOne*(input: string): string =
-    func isSymbol(c: char): bool = c != '.' and not c.isDigit
+func partOne*(input: string): string =
+    func isSymbol(c: char): bool = not (c == '.' or c.isDigit)
 
     let engine = input.parseEngine
     var parts = initHashSet[Position]()
@@ -65,7 +68,7 @@ proc partOne*(input: string): string =
 
     $parts.toSeq.mapIt(engine.parseNumberAt(it)).sum
 
-proc partTwo*(input: string): string =
+func partTwo*(input: string): string =
     func isGear(c: char): bool = c == '*'
 
     let engine = input.parseEngine
