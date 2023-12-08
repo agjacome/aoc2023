@@ -9,3 +9,4 @@ testDay(7):
         QQQJA 483
     """):
         expectPartOne("6440")
+        expectPartTwo("5905")
