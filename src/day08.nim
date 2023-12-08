@@ -1,4 +1,4 @@
-import std/[sequtils, strscans, strutils, tables]
+import std/[math, sequtils, strscans, strutils, sugar, tables]
 
 type
     Network = Table[string, tuple[left: string, right: string]]
@@ -18,25 +18,52 @@ func parse(input: string): (seq[Direction], Network) =
         if line.scanf("$+ = ($+, $+)", value, left, right):
             result[1][value] = (left, right)
 
+func countSteps(
+    network: Network,
+    directions: seq[Direction],
+    start: seq[string],
+    isEnd: (string {.noSideEffect.} -> bool)
+): Table[string, int] =
+    var steps: CountTable[string]
+    var frontier = start.mapIt((it, it))
+
+    while result.len < start.len:
+        while frontier.len > 0:
+            let (source, current) = frontier.pop
+
+            if current.isEnd and source notin result:
+                result[source] = steps[source]
+                continue
+
+            case directions[steps[source] mod directions.len]:
+                of Direction.Right:
+                    frontier &= (source, network[current].right)
+                of Direction.Left:
+                    frontier &= (source, network[current].left)
+
+            steps.inc(source)
+
 func partOne(input: string): string =
     let (directions, network) = input.parse
 
-    var steps = 0
-    var current = "AAA"
+    let steps = network.countSteps(
+        directions = directions,
+        start = @["AAA"],
+        isEnd = (s: string) => s == "ZZZ"
+    )
 
-    while current != "ZZZ":
-        if current notin network:
-            raise newException(ValueError, "Invalid network")
-
-        let direction = directions[steps mod directions.len]
-        let (left, right) = network[current]
-        current = if direction == Direction.Right: right else: left
-
-        steps += 1
-
-    $steps
+    $steps["AAA"]
 
 func partTwo(input: string): string =
-    "TODO"
+    let (directions, network) = input.parse
+
+    let steps = network.countSteps(
+        directions = directions,
+        start = network.keys.toSeq.filterIt(it.endsWith("A")),
+        isEnd = (s: string) => s.endsWith("Z")
+    )
+
+    $steps.values.toSeq.lcm
+
 
 const day* = (partOne: partOne, partTwo: partTwo)
