@@ -7,3 +7,4 @@ testDay 9:
         10 13 16 21 30 45
     """:
         expectPartOne "114"
+        expectPartTwo "2"
