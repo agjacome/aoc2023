@@ -1,7 +1,7 @@
 import std/[options, tables]
 
 import day01, day02, day03, day04, day05
-import day06, day07, day08
+import day06, day07, day08, day09
 
 type Day = concept d
     d.partOne(string) is string
@@ -16,6 +16,7 @@ const days*: Table[int, Day] = {
     6: day06.day,
     7: day07.day,
     8: day08.day,
+    9: day09.day,
 }.toTable
 
 func solve*(dayNumber: int, input: string): Option[(string, string)] =

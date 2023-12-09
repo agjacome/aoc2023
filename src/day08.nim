@@ -1,4 +1,4 @@
-import std/[math, sequtils, strscans, strutils, sugar, tables]
+import std/[math, sequtils, strscans, strutils, tables]
 
 type
     Network = Table[string, tuple[left: string, right: string]]
