@@ -33,6 +33,6 @@ testDay(8):
         22B = (22C, 22C)
         22C = (22Z, 22Z)
         22Z = (22B, 22B)
-        XXX = (XXX, XXXA
+        XXX = (XXX, XXX)
     """):
         expectPartTwo("6")

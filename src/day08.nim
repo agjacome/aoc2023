@@ -11,58 +11,51 @@ func parse(input: string): (seq[Direction], Network) =
         case it:
             of 'R': Direction.Right
             of 'L': Direction.Left
-            else: raise newException(ValueError, "Invalid direction")
+            else: raise newException(ValueError, "Invalid direction: " & it)
 
     for line in documents[1].strip.splitLines:
         var value, left, right: string
         if line.scanf("$+ = ($+, $+)", value, left, right):
             result[1][value] = (left, right)
+        else:
+            raise newException(ValueError, "Invalid node: " & line)
 
 func countSteps(
     network: Network,
     directions: seq[Direction],
-    start: seq[string],
-    isEnd: (string {.noSideEffect.} -> bool)
-): Table[string, int] =
-    var steps: CountTable[string]
-    var frontier = start.mapIt((it, it))
+    startNodes: seq[string],
+    endNodes: seq[string],
+): CountTable[string] =
+    var frontier = startNodes.mapIt((it, it))
 
-    while result.len < start.len:
-        while frontier.len > 0:
-            let (source, current) = frontier.pop
+    while frontier.len > 0:
+        let (source, current) = frontier.pop
 
-            if current.isEnd and source notin result:
-                result[source] = steps[source]
-                continue
+        if current in endNodes:
+            continue
 
-            case directions[steps[source] mod directions.len]:
-                of Direction.Right:
-                    frontier &= (source, network[current].right)
-                of Direction.Left:
-                    frontier &= (source, network[current].left)
+        case directions[result[source] mod directions.len]:
+            of Right: frontier &= (source, network[current].right)
+            of Left: frontier &= (source, network[current].left)
 
-            steps.inc(source)
+        result.inc(source)
 
 func partOne(input: string): string =
     let (directions, network) = input.parse
 
-    let steps = network.countSteps(
-        directions = directions,
-        start = @["AAA"],
-        isEnd = (s: string) => s == "ZZZ"
-    )
+    let startNodes = @["AAA"]
+    let endNodes = @["ZZZ"]
 
+    let steps = network.countSteps(directions, startNodes, endNodes)
     $steps["AAA"]
 
 func partTwo(input: string): string =
     let (directions, network) = input.parse
 
-    let steps = network.countSteps(
-        directions = directions,
-        start = network.keys.toSeq.filterIt(it.endsWith("A")),
-        isEnd = (s: string) => s.endsWith("Z")
-    )
+    let startNodes = network.keys.toSeq.filterIt(it.endsWith("A"))
+    let endNodes = network.keys.toSeq.filterIt(it.endsWith("Z"))
 
+    let steps = network.countSteps(directions, startNodes, endNodes)
     $steps.values.toSeq.lcm
 
 
