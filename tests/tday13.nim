@@ -19,3 +19,4 @@ testDay 13:
         #....#..#
     """:
         expectPartOne "405"
+        expectPartTwo "400"

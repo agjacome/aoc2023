@@ -1,41 +1,39 @@
-import std/[algorithm, sequtils, strutils]
+import std/[math, sequtils, strutils]
 
 type Grid = seq[seq[char]]
 
-iterator parseGrids(input: string): Grid =
+func parseGrids(input: string): seq[Grid] =
     for grid in input.strip.split("\n\n"):
-        yield grid.splitLines.mapIt(it.toSeq)
+        result &= grid.splitLines.mapIt(it.toSeq)
 
 func transpose(grid: Grid): Grid =
     result = newSeq[seq[char]](grid[0].len)
+    for i in 0 .. grid[0].high:
+        result[i] = newSeq[char](grid.len)
+        for j in 0 .. grid.high:
+            result[i][j] = grid[j][i]
 
-    for j, row in grid:
-        for i, char in row:
-            if result[i].len == 0:
-                result[i] = newSeq[char](grid.len)
+func countReflectionDifferences(grid: Grid, row: int): int =
+    for rowDiff in 0 ..< min(row, grid.len - row):
+        for col in 0 ..< grid[row].len:
+            if grid[row + rowDiff][col] != grid[row - rowDiff - 1][col]:
+                result += 1
 
-            result[i][j] = char
+func findReflectionLine(grid: Grid, smudges: int): int =
+    for row in 1 ..< grid.len:
+        if grid.countReflectionDifferences(row) == smudges:
+            return row
 
-func findReflectionLine(grid: Grid): int =
-    for i in 1 ..< grid.len:
-        let top = grid[0 ..< i].reversed
-        let bottom = grid[i ..^ 1]
+func summarizeReflections(grid: Grid, smudges: int): int =
+    let horizontal = grid.findReflectionLine(smudges)
+    let vertical = grid.transpose.findReflectionLine(smudges)
 
-        let len = min(top.len, bottom.len)
-        if top[0 ..< len] == bottom[0 ..< len]:
-            return i
+    horizontal * 100 + vertical
 
 func partOne(input: string): string =
-    var summary = 0
+    $input.parseGrids.mapIt(it.summarizeReflections(smudges = 0)).sum
 
-    for grid in input.parseGrids:
-        let horizontal = grid.findReflectionLine
-        let vertical = grid.transpose.findReflectionLine
-
-        summary += (horizontal * 100) + vertical
-
-    $summary
-
-func partTwo(input: string): string = "TODO"
+func partTwo(input: string): string =
+    $input.parseGrids.mapIt(it.summarizeReflections(smudges = 1)).sum
 
 const day* = (partOne, partTwo)
