@@ -14,3 +14,4 @@ testDay 14:
         #OO..#....
     """:
         expectPartOne "136"
+        expectPartTwo "64"
