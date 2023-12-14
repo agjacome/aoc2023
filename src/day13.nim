@@ -1,17 +1,11 @@
 import std/[math, sequtils, strutils]
+import utils
 
 type Grid = seq[seq[char]]
 
 func parseGrids(input: string): seq[Grid] =
     for grid in input.strip.split("\n\n"):
         result &= grid.splitLines.mapIt(it.toSeq)
-
-func transpose(grid: Grid): Grid =
-    result = newSeq[seq[char]](grid[0].len)
-    for i in 0 .. grid[0].high:
-        result[i] = newSeq[char](grid.len)
-        for j in 0 .. grid.high:
-            result[i][j] = grid[j][i]
 
 func countReflectionDifferences(grid: Grid, row: int): int =
     for rowDiff in 0 ..< min(row, grid.len - row):
