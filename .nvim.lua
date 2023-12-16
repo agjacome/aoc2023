@@ -15,3 +15,9 @@ autocmd('BufWritePost', {
 
 vim.keymap.set('n', '<leader>t', '<cmd>!nim c -r %:.<cr>', { noremap = true })
 vim.keymap.set('n', '<leader>T', '<cmd>!nimble test<cr>',  { noremap = true })
+
+local lsp_status_ok, lspconfig = pcall(require, 'lspconfig')
+
+if lsp_status_ok then
+    lspconfig.nim_langserver.setup({})
+end

@@ -15,8 +15,6 @@ $ nimble run aoc2023 1 input/01.txt
 $ nimble test
 ```
 
-There is also an `.envrc` for [direnv](https://direnv.net) already included.
-
 ##### For non-nix users
 
 Why?
