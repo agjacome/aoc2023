@@ -14,3 +14,4 @@ testDay 16:
         ..//.|....
     """:
         expectPartOne "46"
+        expectPartTwo "51"

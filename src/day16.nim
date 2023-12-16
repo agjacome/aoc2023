@@ -75,6 +75,21 @@ func partOne(input: string): string =
 
     $coverage.len
 
-func partTwo(input: string): string = "TODO"
+func partTwo(input: string): string =
+    let grid = input.parseGrid
+
+    var max = 0
+
+    for x in 0 .. grid.width:
+        let top = grid.beamCoverage(start = (x: x, y: 0), direction = (dx: 0, dy: 1))
+        let bottom = grid.beamCoverage(start = (x: x, y: grid.height - 1), direction = (dx: 0, dy: -1))
+        max = [max, top.len, bottom.len].max
+
+    for y in 0 .. grid.height:
+        let left = grid.beamCoverage(start = (x: 0, y: y), direction = (dx: 1, dy: 0))
+        let right = grid.beamCoverage(start = (x: grid.width - 1, y: y), direction = (dx: -1, dy: 0))
+        max = [max, left.len, right.len].max
+
+    $max
 
 const day* = (partOne, partTwo)
