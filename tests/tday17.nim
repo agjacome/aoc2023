@@ -17,3 +17,13 @@ testDay 17:
         4322674655533
     """:
         expectPartOne "102"
+        expectPartTwo "94"
+
+    withInput """
+        111111111111
+        999999999991
+        999999999991
+        999999999991
+        999999999991
+    """:
+        expectPartTwo "71"
