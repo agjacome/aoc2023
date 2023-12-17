@@ -1,14 +1,21 @@
-import std/[heapqueue, options, sequtils, sets, strutils, sugar]
+import std/[heapqueue, sequtils, sets, strutils, sugar]
 
 type
     Grid = seq[seq[uint]]
     Point = tuple[x: int, y: int]
     Direction = tuple[dx: int, dy: int]
-    State = tuple[heatLoss: uint, point: Point, direction: Direction, steps: uint]
+    State = object
+        heatLoss: uint
+        point: Point
+        direction: Direction
+        steps: uint
+
+func `<`(a: State, b: State): bool =
+    a.heatLoss < b.heatLoss
 
 func turn(direction: Direction): seq[Direction] =
-    let inverted = (direction.dx * -1, direction.dy * -1)
-    @[(0, -1), (0, 1), (-1, 0), (1, 0)].filterIt(it notin [direction, inverted])
+    let opposite = (direction.dx * -1, direction.dy * -1)
+    @[(0, -1), (0, 1), (-1, 0), (1, 0)].filterIt(it notin [direction, opposite])
 
 func next(point: Point, direction: Direction): Point =
     (x: point.x + direction.dx, y: point.y + direction.dy)
@@ -20,28 +27,28 @@ func contains(grid: Grid, point: Point): bool =
     point.y >= 0 and point.y <= grid.high and
     point.x >= 0 and point.x <= grid[point.y].high
 
-func nextStates(
-    grid: Grid,
-    current: State,
-    canContinue: (State {.noSideEffect.} -> bool),
-    canTurn: (State {.noSideEffect.} -> bool)
-): seq[State] =
-    if current.canContinue:
-        let nextPoint = current.point.next(current.direction)
+iterator continuing(current: State, grid: Grid): State =
+    let nextPoint = current.point.next(current.direction)
+
+    if nextPoint in grid:
+        yield State(
+            heatLoss: current.heatLoss + grid[nextPoint.y][nextPoint.x],
+            point: nextPoint,
+            direction: current.direction,
+            steps: current.steps + 1
+        )
+
+iterator turning(current: State, grid: Grid): State =
+    for turned in current.direction.turn:
+        let nextPoint = current.point.next(turned)
 
         if nextPoint in grid:
-            let nextHeatLoss = current.heatLoss + grid[nextPoint.y][nextPoint.x]
-            let nextSteps = current.steps + 1
-            result &= (nextHeatLoss, nextPoint, current.direction, nextSteps)
-
-    if current.canTurn:
-        for turned in current.direction.turn:
-            let nextPoint = current.point.next(turned)
-
-            if nextPoint in grid:
-                let nextHeatLoss = current.heatLoss + grid[nextPoint.y][nextPoint.x]
-                let nextSteps = 1'u
-                result &= (nextHeatLoss, nextPoint, turned, nextSteps)
+            yield State(
+               heatLoss: current.heatLoss + grid[nextPoint.y][nextPoint.x],
+               point: nextPoint,
+               direction: turned,
+               steps: 1'u
+            )
 
 func minHeatLoss(
     grid: Grid,
@@ -50,24 +57,31 @@ func minHeatLoss(
     canContinue: (State {.noSideEffect.} -> bool),
     canTurn: (State {.noSideEffect.} -> bool)
 ): uint =
-    var seen: HashSet[tuple[point: Point, direction: Direction, steps: uint]]
+    var seen: HashSet[(Point, Direction, uint)]
     var queue: HeapQueue[State]
 
-    queue.push((heatLoss: 0'u, point: startPoint, direction: (dx: 1, dy: 0), steps: 0'u))
+    queue.push(State(
+        heatLoss: 0'u,
+        point: startPoint,
+        direction: (dx: 1, dy: 0),
+        steps: 0'u
+    ))
 
     while queue.len > 0:
-        let state = queue.pop
+        let current = queue.pop
 
-        if state.isEnd:
-            return state.heatLoss
+        if current.isEnd:
+            return current.heatLoss
 
-        if (state.point, state.direction, state.steps) in seen:
+        if (current.point, current.direction, current.steps) in seen:
             continue
 
-        seen.incl((state.point, state.direction, state.steps))
+        seen.incl((current.point, current.direction, current.steps))
 
-        for newState in grid.nextStates(state, canContinue, canTurn):
-            queue.push(newState)
+        if current.canContinue:
+            for next in current.continuing(grid): queue.push(next)
+        if current.canTurn:
+            for next in current.turning(grid): queue.push(next)
 
 func partOne(input: string): string =
     let grid = input.parseGrid
