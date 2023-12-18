@@ -7,19 +7,28 @@ type
 
 func parseDirection(direction: string): Direction =
     case direction:
-        of "U": (dx: 0, dy: -1)
-        of "D": (dx: 0, dy: 1)
-        of "L": (dx: -1, dy: 0)
-        of "R": (dx: 1, dy: 0)
+        of "U", "3": (dx: 0, dy: -1)
+        of "D", "1": (dx: 0, dy: 1)
+        of "L", "2": (dx: -1, dy: 0)
+        of "R", "0": (dx: 1, dy: 0)
         else: raise newException(ValueError, "Invalid direction: " & direction)
 
 func parseDigPlan(input: string): DigPlan =
     for line in input.strip.splitLines:
         let parts = line.splitWhitespace
 
-        let direction = parseDirection(parts[0])
+        let direction = parts[0].parseDirection
         let distance = parts[1].parseInt
         result &= (direction, distance)
+
+func parseHexDigPlan(input: string): DigPlan =
+    for line in input.strip.splitLines:
+        let hex = line.splitWhitespace[2]
+
+        let direction = hex[^2..^2].parseDirection
+        let distance = hex[2..^3].parseHexInt
+        result &= (direction, distance)
+
 
 func next(point: Point, direction: Direction, distance: int): Point =
     result.x = point.x + direction.dx * distance
@@ -42,13 +51,12 @@ func dig(plan: DigPlan): int =
         points &= points[^1].next(direction, distance)
         perimeter += distance
 
-    shoelaceArea(points, perimeter)
+    points.shoelaceArea(perimeter)
 
 func partOne(input: string): string =
-    let plan = input.parseDigPlan
+    $input.parseDigPlan.dig
 
-    $plan.dig
-
-func partTwo(input: string): string = "TODO"
+func partTwo(input: string): string =
+    $input.parseHexDigPlan.dig
 
 const day* = (partOne, partTwo)

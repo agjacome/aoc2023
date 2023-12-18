@@ -18,3 +18,4 @@ testDay 18:
         U 2 (#7a21e3)
     """:
         expectPartOne "62"
+        expectPartTwo "952408144115"
