@@ -1,4 +1,4 @@
-import std/[sequtils, strutils]
+import std/strutils
 
 type
     Point = tuple[x: int, y: int]
