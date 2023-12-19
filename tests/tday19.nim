@@ -21,3 +21,4 @@ testDay 19:
         {x=2127,m=1623,a=2188,s=1013}
     """:
         expectPartOne "19114"
+        expectPartTwo "167409079868000"
