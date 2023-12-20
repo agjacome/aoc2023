@@ -85,8 +85,8 @@ func parseNetwork(input: string): Network =
 
 func pushButton(
     network: var Network,
-    onEach: (State {.noSideEffect.} -> void) = func(state: State): void = discard
-): tuple[low: int, high: int] =
+    onEachPulse: (State {.noSideEffect.} -> void)
+): void =
     var queue: Deque[State]
 
     queue.addLast((
@@ -98,10 +98,7 @@ func pushButton(
     while queue.len > 0:
         let current = queue.popFirst
 
-        current.onEach()
-
-        result.low += (if current.value == Pulse.Low: 1 else: 0)
-        result.high += (if current.value == Pulse.High: 1 else: 0)
+        current.onEachPulse()
 
         if current.dst notin network:
             continue
@@ -123,14 +120,16 @@ func findParents(network: Network, needle: string): seq[string] =
 
 func partOne(input: string): string =
     var network = input.parseNetwork
-    var total = (low: 0, high: 0)
+    var (lows, highs) = (0, 0)
 
-    for i in 1 .. 1000:
-        let count = network.pushButton()
-        total.low += count.low
-        total.high += count.high
+    for _ in 1 .. 1000:
+        func onEachPulse(state: State): void =
+            lows += (if state.value == Pulse.Low: 1 else: 0)
+            highs += (if state.value == Pulse.High: 1 else: 0)
 
-    $(total.low * total.high)
+        network.pushButton(onEachPulse)
+
+    $(lows * highs)
 
 func partTwo(input: string): string =
     var network = input.parseNetwork
@@ -142,18 +141,19 @@ func partTwo(input: string): string =
             for grandParent in network.findParents(parent):
                 grandParent
 
+    var index = 1
     var indices: Table[string, int]
 
-    var index = 0
     while indices.len < rxGrandParents.len:
-        index += 1
-        discard network.pushButton(func (state: State): void =
+        func onEachPulse(state: State): void =
             if state.src notin rxGrandParents: return
             if state.src in indices: return
             if state.value != Pulse.High: return
 
             indices[state.src] = index
-        )
+
+        network.pushButton(onEachPulse)
+        index += 1
 
     $indices.values.toSeq.lcm
 
