@@ -1,9 +1,10 @@
-import std/[deques, sequtils, strutils, tables]
+import std/[deques, math, sequtils, strutils, sugar, tables]
 
 type
     Pulse = enum Low, High
     Input = tuple[src: string, value: Pulse]
     Output = tuple[dst: string, value: Pulse]
+    State = tuple[src: string, dst: string, value: Pulse]
 
     Module = ref object of RootObj
         name: string
@@ -82,12 +83,22 @@ func parseNetwork(input: string): Network =
             if dst in result:
                 result[dst].connectTo(name)
 
-func pushButton(network: var Network): tuple[low: int, high: int] =
-    var queue = @[(src: "button", dst: "broadcaster", value: Pulse.Low)].toDeque
+func pushButton(
+    network: var Network,
+    onEach: (State {.noSideEffect.} -> void) = func(state: State): void = discard
+): tuple[low: int, high: int] =
+    var queue: Deque[State]
+
+    queue.addLast((
+        src: "button",
+        dst: "broadcaster",
+        value: Pulse.Low
+    ))
 
     while queue.len > 0:
         let current = queue.popFirst
-        # debugEcho(current.src & " -" & ($current.value).toLower & "-> " & current.dst)
+
+        current.onEach()
 
         result.low += (if current.value == Pulse.Low: 1 else: 0)
         result.high += (if current.value == Pulse.High: 1 else: 0)
@@ -105,22 +116,45 @@ func pushButton(network: var Network): tuple[low: int, high: int] =
                 value: output.value
             ))
 
+func findParents(network: Network, needle: string): seq[string] =
+    for name, module in network:
+        if needle in module.destinations:
+            result &= name
+
 func partOne(input: string): string =
     var network = input.parseNetwork
     var total = (low: 0, high: 0)
 
     for i in 1 .. 1000:
-        # debugEcho("-----" & $i & "-----")
-        let count = network.pushButton
+        let count = network.pushButton()
         total.low += count.low
         total.high += count.high
-
-    # debugEcho("-----")
-    # debugEcho("Total: " & $total.low & " low, " & $total.high & " high")
 
     $(total.low * total.high)
 
 func partTwo(input: string): string =
-    "TODO"
+    var network = input.parseNetwork
+
+    # "rx" parent is always a conjunction, its parents have to all be High for
+    # a Low pulse to be sent to "rx"
+    let rxGrandParents = collect:
+        for parent in network.findParents("rx"):
+            for grandParent in network.findParents(parent):
+                grandParent
+
+    var indices: Table[string, int]
+
+    var index = 0
+    while indices.len < rxGrandParents.len:
+        index += 1
+        discard network.pushButton(func (state: State): void =
+            if state.src notin rxGrandParents: return
+            if state.src in indices: return
+            if state.value != Pulse.High: return
+
+            indices[state.src] = index
+        )
+
+    $indices.values.toSeq.lcm
 
 const day* = (partOne, partTwo)

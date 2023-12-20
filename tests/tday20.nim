@@ -15,6 +15,6 @@ testDay 20:
         %a -> inv, con
         &inv -> b
         %b -> con
-        &con -> output
+        &con -> a
     """:
         expectPartOne "11687500"
