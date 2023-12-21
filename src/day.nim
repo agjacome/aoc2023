@@ -4,6 +4,7 @@ import day01, day02, day03, day04, day05
 import day06, day07, day08, day09, day10
 import day11, day12, day13, day14, day15
 import day16, day17, day18, day19, day20
+import day21
 
 type Day = concept d
     d.partOne(string) is string
@@ -30,6 +31,7 @@ const days*: Table[int, Day] = {
     18: day18.day,
     19: day19.day,
     20: day20.day,
+    21: day21.day,
 }.toTable
 
 func solve*(dayNumber: int, input: string): Option[(string, string)] =
