@@ -14,4 +14,5 @@ testDay 21:
         .##..##.##.
         ...........
     """:
-        expectPartOne "42"
+        expectPartOne "41"
+        expectPartTwo "536899568923058"

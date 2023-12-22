@@ -1,49 +1,75 @@
-import std/[deques, sequtils, sets, strutils]
+import std/[sets, strutils]
 
 type
     Point = tuple[x: int, y: int]
-    Map = tuple[start: Point, garden: HashSet[Point]]
+    Map = tuple[size: int, start: Point, garden: HashSet[Point]]
 
-func neighbors(garden: HashSet[Point], point: Point): HashSet[Point] =
+iterator neighbors(point: Point): Point =
     for (dx, dy) in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-        let neighbor = (point.x + dx, point.y + dy)
+        yield (x: point.x + dx, y: point.y + dy)
 
-        if neighbor in garden:
-            result.incl(neighbor)
+func `mod`(point: Point, n: int): Point =
+    result.x = point.x mod n
+    result.x = if result.x < 0: result.x + n else: result.x
 
-func countReachable(map: Map, totalSteps: int): int =
-    var reachable: HashSet[Point]
+    result.y = point.y mod n
+    result.y = if result.y < 0: result.y + n else: result.y
 
-    var visited: HashSet[Point]
-    var queue = [(point: map.start, steps: 0)].toDeque
+func reachable(map: Map, steps: int, count: int = 1): seq[int] =
+    var queue = [map.start].toHashSet
 
-    while queue.len > 0:
-        var current = queue.popFirst
+    for step in 1 .. steps:
+        var frontier: HashSet[Point]
 
-        if current.steps mod 2 == 0:
-            reachable.incl(current.point)
+        for current in queue:
+            for neighbor in current.neighbors:
+                if neighbor in map.garden:
+                    frontier.incl(neighbor)
 
-        if current.steps == totalSteps: continue
-        if current.point in visited: continue
+                if (neighbor mod map.size) in map.garden:
+                    frontier.incl(neighbor)
 
-        visited.incl(current.point)
+        queue = frontier
 
-        for neighbor in map.garden.neighbors(current.point):
-            if neighbor notin visited:
-                queue.addLast((point: neighbor, steps: current.steps + 1))
+        if step mod map.size == steps mod map.size:
+            result &= queue.len
 
-    reachable.len
+        if result.len == count: break
 
 func parseMap(input: string): Map =
-    for y, line in input.strip.splitLines.toSeq:
+    let lines = input.strip.splitLines
+
+    result.size = lines.len
+
+    for y, line in lines:
         for x, char in line:
-            let point = (x, y)
-            if char == 'S': result.start = point
-            if char != '#': result.garden.incl(point)
+            if char == 'S':
+                result.start = (x, y)
+            if char != '#':
+                result.garden.incl((x, y))
+
+func quadratic(a, b, c, x: int): int =
+    a + (b * x) + (x * (x - 1) div 2) * (c - b)
 
 func partOne(input: string): string =
-    $input.parseMap.countReachable(64)
+    const steps = 64
 
-func partTwo(input: string): string = "TODO"
+    let map = input.parseMap
+    let reachable = map.reachable(steps, count = 1)
+
+    $reachable[0]
+
+func partTwo(input: string): string =
+    const steps = 26501365
+
+    let map = input.parseMap
+    let reachable = map.reachable(steps, count = 3)
+
+    $quadratic(
+        a = reachable[0],
+        b = reachable[1] - reachable[0],
+        c = reachable[2] - reachable[1],
+        x = steps div map.size
+    )
 
 const day* = (partOne, partTwo)
