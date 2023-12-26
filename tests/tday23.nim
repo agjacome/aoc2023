@@ -27,3 +27,4 @@ testDay 23:
         #####################.#
     """:
         expectPartOne "94"
+        expectPartTwo "154"
