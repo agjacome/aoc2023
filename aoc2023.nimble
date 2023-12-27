@@ -8,4 +8,3 @@ bin         = @["aoc2023"]
 
 requires "nim >= 2.0.0"
 requires "fusion >= 1.2"
-requires "nimlangserver >= 0.1.0"
