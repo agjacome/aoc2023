@@ -9,3 +9,4 @@ testDay 24:
         20, 19, 15 @  1, -5, -3
     """:
         expectPartOne "2"
+        expectPartTwo "47"
